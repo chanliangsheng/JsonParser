@@ -23,7 +23,7 @@ pair<Json, int> parse(string_view str)
         return { Json(), 0 };
     } else if (size_t off = str.find_first_not_of(" \n\t\a\b,"); off != 0 && off < str.size()) {
         auto [obj, eaten] = parse(str.substr(off));
-        return { move(obj), off + eaten + 1 };
+        return { move(obj), off + eaten };
     }
     // 如果第一个字符是0-9或者是+或者-，那么说明是数字
     else if ((str[0] >= '0' && str[0] <= '9') || str[0] == '+' || str[0] == '-') {
@@ -65,8 +65,7 @@ pair<Json, int> parse(string_view str)
                 i++;
             }
         }
-
-        return { res, i + 1 };
+        return { Json(res), i + 1 };
     }
 
     else if (str[0] == '{') {
@@ -79,6 +78,8 @@ pair<Json, int> parse(string_view str)
             }
             // 计算key
             auto [key_obj, key_eaten] = parse(str.substr(i));
+
+            //            cout << key_obj.str() << endl;
             if (key_eaten == 0) {
                 i = 0;
                 break;
@@ -94,6 +95,8 @@ pair<Json, int> parse(string_view str)
             }
             // 计算value
             auto [value_obj, value_eaten] = parse(str.substr(i));
+
+            //            cout << value_obj.str() << endl;
             if (value_eaten == 0) {
                 i = 0;
                 break;
@@ -107,7 +110,11 @@ pair<Json, int> parse(string_view str)
             if (str[i] == ',') {
                 i++;
             }
+
+            size_t off2 = str.substr(i).find_first_not_of(" \n\t\a\b,");
+            i += off2;
         }
+
         return { Json(res), i + 1 };
     }
 
